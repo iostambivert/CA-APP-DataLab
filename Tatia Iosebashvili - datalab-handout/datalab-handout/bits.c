@@ -139,6 +139,10 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
+  //firstly we should negate both x and y, flip all the bits of each integer.
+  /*bitwise OR operation results in a value where all the bits that were originally 0 in both x and y 
+  are set to 1, and all other bits are cleared.*/
+  //final negation flips flips all the bits of the result back, naturally means AND operation.
   return ~(~x|~y);
 }
 /* 
@@ -150,7 +154,9 @@ int bitAnd(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-  
+/* shifting by 3 buts computes the number of bits to shift x to reach the desired byte.
+right shiftx by computed one aligns the byte of the interest to LSB.
+bitwise AND operation with 0xFF extracting the byte from the shifted value.*/
 return (x >> (n << 3)) & 0xFF;
 
 }
@@ -166,7 +172,7 @@ int logicalShift(int x, int n) {
   // Create a mask to clear the leftmost n bits
     int mask = ~(((1 << 31) >> n) << 1);
 
-    // Perform logical right shift and clear the leftmost bits
+  // Perform logical right shift and clear the leftmost bits
     return (x >> n) & mask;
 }
 /*
@@ -201,6 +207,12 @@ int bitCount(int x) {
  *   Rating: 4 
  */
 int bang(int x) {
+  //The given code implements the bang function, which takes an integer x as input and returns 1 if x is zero, and returns 0 otherwise.
+  /*the first step is negate x to get -x and make bitwise or operation between x and -x,
+   resulting in a value with all bits set if x is non-zero, and all bits cleared if x is zero. 
+   Next, it right-shifts this result by 31 bits, extracting the sign bit. 
+   If x is non-zero, the sign bit will be 0; if x is zero, the sign bit will be 1.
+   finally, we add 1 in order to make sure the final result becomes 1, if x is zero, otherwise 0. */
   return (((~x + 1) | x) >> 31) + 1;
 }
 /* 
@@ -210,6 +222,10 @@ int bang(int x) {
  *   Rating: 1
  */
 int tmin(void) {
+  /* we can just simply shift it by 31 bits,which resulting in the binary representation 
+  of the minimum value for a 32-bit signed integer.In two's complement representation, the leftmost bit (most significant bit)
+  represents the sign of the number. For the minimum value, this bit is set to 1, indicating a negative number.
+  All other bits are set to 0 to minimize the value represented.*/
   
     return 1<<31;
 }
@@ -223,8 +239,11 @@ int tmin(void) {
  *   Rating: 2
  */
 int fitsBits(int x, int n) {
+  // shifts out all but the n least significant bits.
   x=x>>(n+~0);
 	//(x==0)||(x==-1)
+  //checks if x is either 0 or -1. If x is 0, it returns 1 (true) because 0 can be represented by any number of bits.
+  // If x is -1, it returns 1 (true) because -1 can be represented by all 1s, regardless of the number of bits.
 	return (!x)|(!(x+1));
 }
 /* 
@@ -252,6 +271,7 @@ int divpwr2(int x, int n) {
  *   Rating: 2 
  */
 int negate(int x) {
+  /* if we want to return -x, we can just use this negation, wich always returns the opposite of given x. )) */
   return ~x+1;
 }
 /* 
@@ -262,13 +282,13 @@ int negate(int x) {
  *   Rating: 3
  */
 int isPositive(int x) {
+/*the first right shift operation on x by 31 bits extracts the sign bit of 'x'.
+If x is negative, the sign bit will be 1; if x is non-negative (including zero), the sign bit will be 0.
+The logical OR operation effectively combines the sign bit and the logical negation of x. 
+If x is negative, the result will be all 1s; if x is non-negative (including zero), the result will be all 0s.
+finally it applies logical negation (!) which stands for getting zero if x is negative, otherwise 1*/
+
   return !(((x >> 31) | (!x)));
-
-
-  /*when x is 0,return 0
-	int flag=(x>>31);//Now the LSB of flag is the MSB of x
-	flag&=0x1;//only keep the LSB of flag
-	return (!flag)^(!x); */
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -278,6 +298,11 @@ int isPositive(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
+  /*implementation basically starts from the XOR operation and then right shift by 31 bits, which extracts the sign bit.
+   If x is less than y, the result will be 1; otherwise, it will be 0.logical OR operation with y effectively replaces the sign bit with 
+   the value of y if x is less than y. next step is to negate previous one to return 0 if  x is less than y, otherwise 1. adding result to x
+   stands for determining whether x is less than or equal to y or not. the right shift extracts the sign bit.  If the result is less than or equal to x, 
+   the sign bit will be 0; otherwise, it will be 1. finally and operations provides the result is either 0 or 1 , according to the 'x' is less or equal to y or not.*/
   return ((x + ~(((x ^ y) >> 31) | y)) >> 31) & 1;
 }
 /*
@@ -288,12 +313,22 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4
  */
 int ilog2(int x) {
-  int ans = (!(x >> 16)) << 4;
+  //checks if the upper half of x (bits 16-31) is all zeroes.then shift by 4to obtain the most significant bit of the logarithm.
+  int ans = (!(x >> 16)) << 4; 
+  // checks if remaining bits are zeros, ans is obtained previously  If it is, it returns 1, otherwise 0.
+  // This result is XORed with ans left-shifted by 3, which sets the next bit of the logarithm.
   ans ^= (!(x << ans >> 24)) << 3;
+  //sets ans to XOR with 28, which adds a fixed offset to the logarithm.
   ans ^= 28;
+  //checks if the remaining lower bits of x (bits 0 through ans - 1) are all zeroes. If it is, it returns 1, otherwise 0. 
+  //This result is left-shifted by 2 and XORed with ans, setting another bit of the logarithm.
   ans ^= (!(x >> ans)) << 2;
+  //It updates x by right-shifting it by ans bits.
   x = x >> ans;
+  // extracts the bits of x (after the right shift) in positions 1-30 and uses them to index into a predefined table (0x5B),
+  //returning a value between 0 and 3. This result is XORed with ans to set the last two bits of the logarithm.
   ans ^= ((~0x5B) >> (x & 30)) & 3;
+  // The function returns the computed logarithm of x.
   return ans;
 }
 /* 
@@ -312,11 +347,18 @@ unsigned float_neg(unsigned uf) {
  //check whether uf is NaN
 	unsigned mask;
 	int temp;
+  //mask is used to extract the sign bit of the float.
 	mask=1U<<31;
+  //Then, it combines the sign bit of the float with the exponent bits by performing a bitwise OR operation.
 	temp=uf | mask;
+  // It then right-shifts this combined value by 23 bits to isolate the exponent part (temp >>= 23).
 	temp >>= 23;
+  //It checks if the exponent part consists of all 1s (NaN) and if the fraction part is not all zeroes. 
+  //If both conditions are met, indicating that the float is NaN, it returns the input float uf unchanged.
 	if((!(~ temp)) && (!!(uf<<9))  )
 		return uf;
+  //If the float is not NaN, it performs a bitwise XOR operation between uf and the mask.
+  // This operation flips the sign bit of the float, effectively negating it
 	return uf ^ mask;
 }
 /* 
@@ -329,7 +371,39 @@ unsigned float_neg(unsigned uf) {
  *   Rating: 4
  */
 unsigned float_i2f(int x) {
-  return 2;
+  int flag = (x & 0x80000000), i, val1, val2, len, tempp, temp;//flag equals to (1 << 31) or 0,indicating the sign bit of x
+	if(x == 0x80000000)//if x equals to INT_MIN
+		return 0xcf000000;//Then we can not take -x, so just return the answer
+	if(flag)//flag equals to (1 << 31) or 0, and flag is considered true when flag equals to (1 << 31)
+		x = -x;//x now equals to abs(x)
+	i = 31;//initialization of i, i will be the first bit of 1(from left to right, except the sign bit)
+	do
+	{
+		if( x >> (--i) & 0x1)
+			break;
+	}
+	while(i);
+	if(x == 0)//x equals to zero
+		return 0;
+	temp = i + 127;//This temp is exp, 127 is the bias
+	len = i - 23;//if i is greater than 23, than len is the number of bits that needed to be rounded
+	if(len > 0)
+	{
+		val2 = x & ((0xffffffffU) >> (32 - len) );//Save the bits that will be rounded in val2
+		val1 = (x >> len) & 0x007fffff;//val1 is the frac domain
+		tempp = 1 << (len - 1);//set tempp to justify the round stat
+		if((val2 > tempp) || ((val2 == tempp) && ((val1 & 0x1))))//There is a carry '1' here
+			val1++;
+	}
+	else
+		val1 = (x << (-len)) & 0x007fffff;//if len <= 0, which means the 23 bit of frac is enough, we do not need to consider val2
+
+	if(val1 == 0x00800000 )//corner case, special judge
+	{
+		val1 = 0;
+		temp++;
+	}
+	return flag  | ((temp << 23)) | (val1);
 }
 /* 
  * float_twice - Return bit-level equivalent of expression 2*f for
@@ -343,5 +417,23 @@ unsigned float_i2f(int x) {
  *   Rating: 4
  */
 unsigned float_twice(unsigned uf) {
-  return 2;
+  unsigned s, exp, frac;
+	s = uf & 0x80000000;//s is the sign bit
+	exp = (uf >> 23) & 0x000000ff;//exp is the exponent domain
+	frac = uf & 0x007fffff;//get the lowest 23 bits of uf
+	if(exp == 255)//NaN or INF
+		return uf;
+	if(exp == 0)//denormalized floating point number
+	{
+		if(frac & 0x00400000)//if the first bit of frac is 1
+			exp++;
+		frac = (frac << 1) & 0x007fffff;
+	}
+	else
+	{
+		exp++;
+		if(exp == 255)//If 2*uf is INF
+			frac = 0;
+	}
+	return s | (exp << 23) | frac;
 }
